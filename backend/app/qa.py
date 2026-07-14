@@ -47,6 +47,7 @@ def answer_question(query: str, limit: int = 5) -> dict[str, object]:
     answer = "".join(block.text for block in response.content if block.type == "text")
 
     citations = [
-        {"filename": source["filename"], "content": source["content"]} for source in sources
+        {"index": index, "filename": source["filename"], "content": source["content"]}
+        for index, source in enumerate(sources, start=1)
     ]
     return {"answer": answer, "citations": citations}

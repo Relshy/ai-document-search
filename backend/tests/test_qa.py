@@ -20,7 +20,9 @@ def test_answer_question_returns_answer_with_citations() -> None:
     mock_client.messages.create.assert_called_once()
     assert result == {
         "answer": "The launch date is March 3rd [1].",
-        "citations": [{"filename": "notes.md", "content": "The launch date is March 3rd."}],
+        "citations": [
+            {"index": 1, "filename": "notes.md", "content": "The launch date is March 3rd."}
+        ],
     }
 
 

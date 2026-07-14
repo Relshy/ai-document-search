@@ -18,7 +18,7 @@ Seed project. The goal, scope, and task list are defined here; the implementatio
 
 - [x] Semantic retrieval over documents
 - [x] Question answering with cited sources
-- [ ] Highlight citations in results
+- [x] Highlight citations in results
 
 ## Tech stack
 
