@@ -32,3 +32,30 @@ def test_search_rejects_empty_query() -> None:
 
     assert response.status_code == 422
     assert response.json()["detail"] == "query must not be empty"
+
+
+def test_ask_returns_answer_with_citations() -> None:
+    with patch(
+        "app.main.answer_question",
+        return_value={
+            "answer": "The launch date is March 3rd [1].",
+            "citations": [{"filename": "notes.md", "content": "The launch date is March 3rd."}],
+        },
+    ) as mock_answer_question:
+        response = client.get("/ask", params={"query": "When is the launch?"})
+
+    mock_answer_question.assert_called_once_with("When is the launch?", limit=5)
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "query": "When is the launch?",
+        "answer": "The launch date is March 3rd [1].",
+        "citations": [{"filename": "notes.md", "content": "The launch date is March 3rd."}],
+    }
+
+
+def test_ask_rejects_empty_query() -> None:
+    response = client.get("/ask", params={"query": "   "})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "query must not be empty"

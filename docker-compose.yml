@@ -21,6 +21,7 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://ai_document_search:ai_document_search@db:5432/ai_document_search
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY must be set}
     depends_on:
       db:
         condition: service_healthy
