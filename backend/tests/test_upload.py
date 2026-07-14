@@ -11,7 +11,10 @@ def test_upload_markdown_document_returns_extracted_text() -> None:
     response = client.post("/documents", files=files)
 
     assert response.status_code == 200
-    assert response.json() == {"filename": "notes.md", "text": "# Heading\n\nBody text."}
+    assert response.json() == {
+        "filename": "notes.md",
+        "chunks": ["# Heading Body text."],
+    }
 
 
 def test_upload_unsupported_document_returns_error() -> None:

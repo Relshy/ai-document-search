@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile
 
+from app.chunking import chunk_text
 from app.documents import UnsupportedDocumentType, extract_text
 
 app = FastAPI(title="ai-document-search")
@@ -11,7 +12,7 @@ def health_check() -> dict[str, str]:
 
 
 @app.post("/documents")
-async def upload_document(file: UploadFile) -> dict[str, str]:
+async def upload_document(file: UploadFile) -> dict[str, object]:
     content = await file.read()
 
     try:
@@ -19,4 +20,4 @@ async def upload_document(file: UploadFile) -> dict[str, str]:
     except UnsupportedDocumentType as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
-    return {"filename": file.filename or "", "text": text}
+    return {"filename": file.filename or "", "chunks": chunk_text(text)}
