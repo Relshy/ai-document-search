@@ -1,0 +1,29 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ai_document_search
+      POSTGRES_PASSWORD: ai_document_search
+      POSTGRES_DB: ai_document_search
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_document_search"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://ai_document_search:ai_document_search@db:5432/ai_document_search
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
