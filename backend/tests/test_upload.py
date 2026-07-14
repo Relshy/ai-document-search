@@ -10,8 +10,15 @@ client = TestClient(app)
 def test_upload_markdown_document_returns_extracted_text() -> None:
     files = {"file": ("notes.md", b"# Heading\n\nBody text.", "text/markdown")}
 
-    with patch("app.main.embed_chunks", return_value=[[0.1, 0.2, 0.3]]):
+    with (
+        patch("app.main.embed_chunks", return_value=[[0.1, 0.2, 0.3]]),
+        patch("app.main.store_chunks") as mock_store_chunks,
+    ):
         response = client.post("/documents", files=files)
+
+    mock_store_chunks.assert_called_once_with(
+        "notes.md", ["# Heading Body text."], [[0.1, 0.2, 0.3]]
+    )
 
     assert response.status_code == 200
     assert response.json() == {

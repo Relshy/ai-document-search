@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, UploadFile
 from app.chunking import chunk_text
 from app.documents import UnsupportedDocumentType, extract_text
 from app.embedding import embed_chunks
+from app.storage import store_chunks
 
 app = FastAPI(title="ai-document-search")
 
@@ -23,6 +24,7 @@ async def upload_document(file: UploadFile) -> dict[str, object]:
 
     chunks = chunk_text(text)
     embeddings = embed_chunks(chunks)
+    store_chunks(file.filename or "", chunks, embeddings)
 
     return {
         "filename": file.filename or "",
