@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from app.embedding import EmbeddingModel, get_embedding_model
+from app.embedding import EmbeddingModel, embed_query, get_embedding_model
 
 
 def test_embed_returns_vector_per_chunk() -> None:
@@ -37,4 +37,16 @@ def test_get_embedding_model_is_cached() -> None:
         second = get_embedding_model()
 
     assert first is second
+    get_embedding_model.cache_clear()
+
+
+def test_embed_query_returns_single_vector() -> None:
+    get_embedding_model.cache_clear()
+    fake_model = MagicMock()
+    fake_model.encode.return_value.tolist.return_value = [[0.1, 0.2]]
+
+    with patch("sentence_transformers.SentenceTransformer", return_value=fake_model):
+        vector = embed_query("what is this document about?")
+
+    assert vector == [0.1, 0.2]
     get_embedding_model.cache_clear()

@@ -48,3 +48,23 @@ def store_chunks(filename: str, chunks: list[str], embeddings: list[list[float]]
             "INSERT INTO document_chunks (filename, content, embedding) VALUES (%s, %s, %s)",
             [(filename, chunk, embedding) for chunk, embedding in zip(chunks, embeddings)],
         )
+
+
+def search_chunks(query_embedding: list[float], limit: int = 5) -> list[dict[str, object]]:
+    connection = get_connection()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT filename, content, embedding <-> %s AS distance
+            FROM document_chunks
+            ORDER BY distance
+            LIMIT %s
+            """,
+            (query_embedding, limit),
+        )
+        rows = cursor.fetchall()
+
+    return [
+        {"filename": filename, "content": content, "distance": distance}
+        for filename, content, distance in rows
+    ]

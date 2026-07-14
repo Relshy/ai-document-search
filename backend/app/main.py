@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException, UploadFile
 
 from app.chunking import chunk_text
 from app.documents import UnsupportedDocumentType, extract_text
-from app.embedding import embed_chunks
-from app.storage import store_chunks
+from app.embedding import embed_chunks, embed_query
+from app.storage import search_chunks, store_chunks
 
 app = FastAPI(title="ai-document-search")
 
@@ -31,3 +31,14 @@ async def upload_document(file: UploadFile) -> dict[str, object]:
         "chunks": chunks,
         "embedding_dimension": len(embeddings[0]) if embeddings else 0,
     }
+
+
+@app.get("/search")
+def search_documents(query: str, limit: int = 5) -> dict[str, object]:
+    if not query.strip():
+        raise HTTPException(status_code=422, detail="query must not be empty")
+
+    query_embedding = embed_query(query)
+    results = search_chunks(query_embedding, limit=limit)
+
+    return {"query": query, "results": results}

@@ -22,3 +22,7 @@ def get_embedding_model() -> EmbeddingModel:
 
 def embed_chunks(chunks: list[str]) -> list[list[float]]:
     return get_embedding_model().embed(chunks)
+
+
+def embed_query(query: str) -> list[float]:
+    return get_embedding_model().embed([query])[0]
