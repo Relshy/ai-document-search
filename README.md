@@ -12,7 +12,7 @@ Seed project. The goal, scope, and task list are defined here; the implementatio
 
 - [x] Upload PDFs and Markdown documents
 - [ ] OCR scanned documents
-- [ ] Chunk and embed documents
+- [x] Chunk and embed documents
 
 ## Search
 
