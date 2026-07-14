@@ -1,7 +1,10 @@
 from io import BytesIO
 
+from PIL import Image
 from pypdf import PdfWriter
+from reportlab.pdfgen import canvas
 
+from app import documents
 from app.documents import UnsupportedDocumentType, extract_text
 
 
@@ -21,6 +24,17 @@ def test_extract_text_from_pdf() -> None:
     assert text == ""
 
 
+def test_extract_text_ocrs_scanned_pdf_pages(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(
+        documents.pytesseract, "image_to_string", lambda image: "Scanned page text"
+    )
+    content = _build_scanned_pdf_bytes(tmp_path)
+
+    text = extract_text("scan.pdf", content)
+
+    assert text == "Scanned page text"
+
+
 def test_extract_text_rejects_unsupported_extension() -> None:
     try:
         extract_text("archive.zip", b"binary data")
@@ -34,4 +48,15 @@ def _build_pdf_bytes() -> bytes:
     writer.add_blank_page(width=72, height=72)
     buffer = BytesIO()
     writer.write(buffer)
+    return buffer.getvalue()
+
+
+def _build_scanned_pdf_bytes(tmp_path) -> bytes:
+    image_path = tmp_path / "page.png"
+    Image.new("RGB", (100, 50), color="white").save(image_path)
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=(200, 200))
+    pdf.drawImage(str(image_path), 10, 10, width=100, height=50)
+    pdf.save()
     return buffer.getvalue()
