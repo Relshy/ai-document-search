@@ -2,7 +2,33 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.storage import search_chunks, store_chunks
+from app.storage import get_connection, get_database_url, search_chunks, store_chunks
+
+
+def test_get_database_url_requires_env_var(monkeypatch) -> None:
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    with pytest.raises(RuntimeError, match="DATABASE_URL"):
+        get_database_url()
+
+
+def test_get_connection_creates_schema_and_registers_vector(monkeypatch) -> None:
+    get_connection.cache_clear()
+    monkeypatch.setenv("DATABASE_URL", "postgresql://localhost/test")
+    mock_connection = MagicMock()
+
+    with (
+        patch("app.storage.psycopg.connect", return_value=mock_connection) as mock_connect,
+        patch("app.storage.register_vector") as mock_register_vector,
+    ):
+        connection = get_connection()
+
+    mock_connect.assert_called_once_with("postgresql://localhost/test", autocommit=True)
+    mock_register_vector.assert_called_once_with(mock_connection)
+    assert mock_connection.execute.call_args_list[0].args[0] == "CREATE EXTENSION IF NOT EXISTS vector"
+    assert "CREATE TABLE IF NOT EXISTS document_chunks" in mock_connection.execute.call_args_list[1].args[0]
+    assert connection is mock_connection
+    get_connection.cache_clear()
 
 
 def test_store_chunks_inserts_a_row_per_chunk() -> None:
