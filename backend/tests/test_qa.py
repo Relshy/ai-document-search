@@ -1,7 +1,9 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from app.qa import answer_question
+import pytest
+
+from app.qa import answer_question, get_anthropic_client
 
 
 def test_answer_question_returns_answer_with_citations() -> None:
@@ -39,3 +41,13 @@ def test_answer_question_handles_no_matching_sources() -> None:
         "answer": "No relevant documents were found to answer this question.",
         "citations": [],
     }
+
+
+def test_get_anthropic_client_requires_api_key(monkeypatch) -> None:
+    get_anthropic_client.cache_clear()
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+
+    with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
+        get_anthropic_client()
+
+    get_anthropic_client.cache_clear()

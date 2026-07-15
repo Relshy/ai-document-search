@@ -43,6 +43,14 @@ def test_extract_text_rejects_unsupported_extension() -> None:
         assert error.extension == ".zip"
 
 
+def test_extract_text_rejects_filename_without_extension() -> None:
+    try:
+        extract_text("archive", b"binary data")
+        assert False, "expected UnsupportedDocumentType to be raised"
+    except UnsupportedDocumentType as error:
+        assert error.extension == ""
+
+
 def _build_pdf_bytes() -> bytes:
     writer = PdfWriter()
     writer.add_blank_page(width=72, height=72)
