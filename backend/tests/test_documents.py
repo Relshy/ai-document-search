@@ -24,6 +24,14 @@ def test_extract_text_from_pdf() -> None:
     assert text == ""
 
 
+def test_extract_text_from_pdf_with_selectable_text() -> None:
+    content = _build_text_pdf_bytes("Hello from a real PDF page.")
+
+    text = extract_text("report.pdf", content)
+
+    assert text == "Hello from a real PDF page."
+
+
 def test_extract_text_ocrs_scanned_pdf_pages(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(
         documents.pytesseract, "image_to_string", lambda image: "Scanned page text"
@@ -56,6 +64,14 @@ def _build_pdf_bytes() -> bytes:
     writer.add_blank_page(width=72, height=72)
     buffer = BytesIO()
     writer.write(buffer)
+    return buffer.getvalue()
+
+
+def _build_text_pdf_bytes(text: str) -> bytes:
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=(200, 200))
+    pdf.drawString(10, 100, text)
+    pdf.save()
     return buffer.getvalue()
 
 
